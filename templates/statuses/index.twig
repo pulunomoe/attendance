@@ -1,0 +1,36 @@
+{% extends 'departments/view.twig' %}
+
+{% import '__macros/html.twig' as html %}
+
+{% block subcontent %}
+
+{{ html.subPageHeader('Status list', [
+	{link: '/departments/view/'~department.id~'/statuses/form', class: 'btn-primary', label: 'Add new status'}
+]) }}
+
+<table class="table table-hover">
+	<thead>
+	<tr>
+		<th>Name</th>
+		<th>Description</th>
+		<th></th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for status in statuses %}
+		<tr>
+			<td>{{ status.name }}</a></td>
+			<td>{{ status.description }}</td>
+			<td>
+
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+<script>
+	document.querySelector('a#statusses-tab').classList.add('active');
+</script>
+
+{% endblock %}

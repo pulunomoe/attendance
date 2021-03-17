@@ -1,0 +1,26 @@
+{% extends '__layout.twig' %}
+
+{% import '__macros/html.twig' as html %}
+
+{% block content %}
+
+{% include '__commons/success.twig' %}
+
+{{ html.breadcrumbs([
+	{link: '#', label: 'Configuration'},
+	{link: '/employees', label: 'Employees'},
+	{link: '/employees/view/'~employee.id, label: employee.name}
+]) }}
+
+{{ html.pageHeader('Employee: '~employee.name, [
+	{link: '/employees', class: 'btn-outline-secondary', label: 'Back to list'},
+	{link: '/employees/form/'~employee.id, class: 'btn-info', label: 'Edit'},
+	{link: '/employees/delete/'~employee.id, class: 'btn-danger', label: 'Delete'}
+]) }}
+
+{{ html.definitions([
+	{label: 'E-mail', value: employee.email},
+	{label: 'Description', value: employee.description}
+]) }}
+
+{% endblock %}

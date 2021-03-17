@@ -1,0 +1,41 @@
+{% extends '__layout.twig' %}
+
+{% import '__macros/html.twig' as html %}
+
+{% block content %}
+
+{% include '__commons/success.twig' %}
+
+{{ html.breadcrumbs([
+	{link: '#', label: 'Configuration'},
+	{link: '/employees', label: 'Employees'}
+]) }}
+
+{{ html.pageHeader('Employee list', [
+	{link: '/employees/form', class: 'btn-primary', label: 'Add new employee'}
+]) }}
+
+<table class="table table-hover">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Email</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for employee in employees %}
+			<tr>
+				<td>
+					<a href="/employees/view/{{ employee.id }}">
+						{{ employee.name }}
+					</a>
+				</td>
+				<td>{{ employee.email }}</td>
+				<td>{{ employee.descriptions }}</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}

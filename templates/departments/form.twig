@@ -1,0 +1,42 @@
+{% extends '__layout.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% block content %}
+
+{% include '__commons/errors.twig' %}
+
+{% set breadcrumbs = [
+	{link: '#', label: 'Configuration'},
+	{link: '/departments', label: 'Departments'}
+] %}
+{% if department %}
+	{% set breadcrumbs = breadcrumbs|merge([
+		{link: '/departments/view/'~department.id, label: department.name},
+		{link: '/departments/form/'~department.id, label: 'Edit'}
+	]) %}
+{% else %}
+	{% set breadcrumbs = breadcrumbs|merge([{link: '/departments/form', label: 'Add'}]) %}
+{% endif %}
+
+{{ html.breadcrumbs(breadcrumbs) }}
+
+{% if department %}
+	{{ html.pageHeader('Edit department', [
+		{link: '/departments/view/'~department.id, class: 'btn-outline-secondary', label: 'Back to view'}
+	]) }}
+{% else %}
+	{{ html.pageHeader('Add new department', [
+		{link: '/departments', class: 'btn-outline-secondary', label: 'Back to list'}
+	]) }}
+{% endif %}
+
+<form method="post" action="/departments/form">
+	{{ form.hidden('id', department.id) }}
+	{{ form.input('name', 'Name', department.name) }}
+	{{ form.input('description', 'Description', department.description) }}
+	{{ form.submit() }}
+</form>
+
+{% endblock %}

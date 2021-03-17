@@ -3,17 +3,22 @@
 namespace Pulunomoe\Attendance\Controller;
 
 use PDO;
-use Slim\Views\PhpRenderer;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest;
+use Slim\Views\Twig;
 
 abstract class Controller
 {
 	protected PDO $pdo;
-	protected PhpRenderer $view;
 
-	public function __construct(PDO $pdo, PhpRenderer $view)
+	public function __construct(PDO $pdo)
 	{
 		$this->pdo = $pdo;
-		$this->view = $view;
+	}
+
+	public function render(ServerRequest $request, Response $response, string $template, array $data = [])
+	{
+		return Twig::fromRequest($request)->render($response, $template, $data);
 	}
 
 	public function getFlash($key): string|array|null

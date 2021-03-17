@@ -1,0 +1,32 @@
+{% extends '__layout.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% block content %}
+
+{{ html.breadcrumbs([
+	{link: '#', label: 'Configuration'},
+	{link: '/employees', label: 'Employees'},
+	{link: '/employees/view/'~employee.id, label: employee.name},
+	{link: '/employees/delete/'~employee.id, label: 'Delete'}
+]) }}
+
+{{ html.pageHeader('Delete employee', [
+	{link: '/employees/view/'~employee.id, class: 'btn-outline-secondary', label: 'Back to view'}
+]) }}
+
+{{ html.definitions([
+	{label: 'Name', value: employee.name},
+	{label: 'E-mail', value: employee.email},
+	{label: 'Description', value: employee.description}
+]) }}
+
+<p class="fw-bold border-bottom mt-3">Are you sure you want to delete this employee? All data associated with this employees will also be deleted!</p>
+
+<form method="post" actions="/employees/delete">
+	{{ form.hidden('id', employee.id) }}
+	{{ form.confirm() }}
+</form>
+
+{% endblock %}

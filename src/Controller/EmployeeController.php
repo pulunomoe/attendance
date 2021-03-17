@@ -8,21 +8,20 @@ use Pulunomoe\Attendance\Model\EmployeeModel;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
-use Slim\Views\PhpRenderer;
 
 class EmployeeController extends Controller
 {
 	private EmployeeModel $employeeModel;
 
-	public function __construct(PDO $pdo, PhpRenderer $view)
+	public function __construct(PDO $pdo)
 	{
-		parent::__construct($pdo, $view);
+		parent::__construct($pdo);
 		$this->employeeModel = new EmployeeModel($pdo);
 	}
 
 	public function index(ServerRequest $request, Response $response): ResponseInterface
 	{
-		return $this->view->render($response, 'employees/index.php', [
+		return $this->render($request, $response, 'employees/index.twig', [
 			'employees' => $this->employeeModel->findAll(),
 			'success' => $this->getFlash('success')
 		]);
@@ -35,7 +34,7 @@ class EmployeeController extends Controller
 			throw new HttpNotFoundException($request);
 		}
 
-		return $this->view->render($response, 'employees/view.php', [
+		return $this->render($request, $response, 'employees/view.twig', [
 			'employee' => $employee,
 			'employees' => [],
 			'success' => $this->getFlash('success')
@@ -44,14 +43,16 @@ class EmployeeController extends Controller
 
 	public function form(ServerRequest $request, Response $response, array $args): ResponseInterface
 	{
-		if (!empty($args['id'])) {
-			$employee = $this->employeeModel->findOne($args['id']);
+		$id = $args['id'] ?? null;
+
+		if (!empty($id)) {
+			$employee = $this->employeeModel->findOne($id);
 			if (empty($employee)) {
 				throw new HttpNotFoundException($request);
 			}
 		}
 
-		return $this->view->render($response, 'employees/form.php', [
+		return $this->render($request, $response, 'employees/form.twig', [
 			'employee' => $employee ?? null,
 			'errors' => $this->getFlash('errors')
 		]);
@@ -86,6 +87,20 @@ class EmployeeController extends Controller
 
 		$this->setFlash('success', 'Employee has been successfully saved');
 		return $response->withRedirect('/employees/view/'.$id);
+	}
+
+	public function delete(ServerRequest $request, Response $response, array $args): ResponseInterface
+	{
+		$id = $args['id'];
+
+		$employee = $this->employeeModel->findOne($id);
+		if (empty($employee)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		return $this->render($request, $response, 'employees/delete.twig', [
+			'employee' => $employee
+		]);
 	}
 
 	public function deletePost(ServerRequest $request, Response $response): ResponseInterface

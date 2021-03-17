@@ -6,7 +6,7 @@ class EmployeeModel extends Model
 {
 	public function findAll(): array
 	{
-		$stmt = $this->pdo->prepare('SELECT * FROM employees');
+		$stmt = $this->pdo->prepare('SELECT * FROM employees WHERE admin = 0');
 		$stmt->execute();
 
 		return $stmt->fetchAll();
@@ -14,7 +14,7 @@ class EmployeeModel extends Model
 
 	public function findOne(int $id): ?object
 	{
-		$stmt = $this->pdo->prepare('SELECT * FROM employees WHERE id = ?');
+		$stmt = $this->pdo->prepare('SELECT * FROM employees WHERE id = ? AND admin = 0');
 		$stmt->execute([$id]);
 
 		return $stmt->fetch();

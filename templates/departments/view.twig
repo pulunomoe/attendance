@@ -1,0 +1,34 @@
+{% extends '__layout.twig' %}
+
+{% import '__macros/html.twig' as html %}
+
+{% block content %}
+
+{% include '__commons/success.twig' %}
+
+{{ html.breadcrumbs([
+	{link: '#', label: 'Configuration'},
+	{link: '/departments', label: 'Departments'},
+	{link: '/departments/view/'~department.id, label: department.name}
+]) }}
+
+{{ html.pageHeader('Department: '~department.name, [
+	{link: '/departments', class: 'btn-outline-secondary', label: 'Back to list'},
+	{link: '/departments/form/'~department.id, class: 'btn-info', label: 'Edit'},
+	{link: '/departments/delete/'~department.id, class: 'btn-danger', label: 'Delete'}
+]) }}
+
+{{ html.definitions([
+	{label: 'Description', value: department.description}
+]) }}
+
+<ul class="nav nav-tabs mb-4">
+	<li class="nav-item">
+		<a href="/departments/view/{{ department.id }}/statuses" class="nav-link" id="statusses-tab">Statuses</a>
+	</li>
+</ul>
+
+{% block subcontent %}
+{% endblock %}
+
+{% endblock %}

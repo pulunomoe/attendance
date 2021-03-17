@@ -1,0 +1,47 @@
+{% extends '__layout.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% block content %}
+
+{% include '__commons/errors.twig' %}
+
+{% set breadcrumbs = [
+	{link: '#', label: 'Configuration'},
+	{link: '/employees', label: 'Employees'}
+] %}
+{% if employee %}
+	{% set breadcrumbs = breadcrumbs|merge([
+		{link: '/employees/view/'~employee.id, label: employee.name},
+		{link: '/employees/form/'~employee.id, label: 'Edit'}
+	]) %}
+{% else %}
+	{% set breadcrumbs = breadcrumbs|merge([{link: '/employees/form', label: 'Add'}]) %}
+{% endif %}
+
+{{ html.breadcrumbs(breadcrumbs) }}
+
+{% if employee %}
+	{{ html.pageHeader('Edit employee', [
+		{link: '/employees/view/'~employee.id, class: 'btn-outline-secondary', label: 'Back to view'}
+	]) }}
+{% else %}
+	{{ html.pageHeader('Add new employee', [
+		{link: '/employees', class: 'btn-outline-secondary', label: 'Back to list'}
+	]) }}
+{% endif %}
+
+<form method="post" action="/employees/form">
+	{{ form.hidden('id', employee.id) }}
+	{{ form.input('name', 'Name', employee.name) }}
+	{{ form.input('email', 'E-mail', employee.email, 'email') }}
+	{% if not employee %}
+		{{ form.input('password', 'Password', '', 'password') }}
+		{{ form.input('confirm', 'Confirm password', '', 'password') }}
+	{% endif %}
+	{{ form.input('description', 'Description', employee.description) }}
+	{{ form.submit() }}
+</form>
+
+{% endblock %}
