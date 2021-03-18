@@ -47,6 +47,9 @@ $app->get('/employees/delete/{id}', [$employeeController, 'delete']);
 $app->post('/employees/delete', [$employeeController, 'deletePost']);
 
 $app->get('/departments/view/{departmentId}/statuses', [$statusController, 'index']);
-//$app->get('/departments/{departmentId}/statuses/form[/{id}]', [$statusController, 'form']);
+$app->get('/departments/view/{departmentId}/statuses/form[/{id}]', [$statusController, 'form']);
+$app->post('/statuses/form', [$statusController, 'formPost']);
+$app->get('/departments/view/{departmentId}/statuses/delete/{id}', [$statusController, 'delete']);
+$app->post('/statuses/delete', [$statusController, 'deletePost']);
 
 $app->run();

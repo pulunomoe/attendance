@@ -21,8 +21,11 @@
 		<tr>
 			<td>{{ status.name }}</a></td>
 			<td>{{ status.description }}</td>
-			<td>
-
+			<td width="1%" style="white-space: nowrap">
+				<div class="btn-group btn-group-sm">
+					<a href="/departments/view/{{ department.id }}/statuses/form/{{ status.id }}" class="btn btn-info">Edit</a>
+					<a href="/departments/view/{{ department.id }}/statuses/delete/{{ status.id }}" class="btn btn-danger">Delete</a>
+				</div>
 			</td>
 		</tr>
 	{% endfor %}
@@ -30,7 +33,7 @@
 </table>
 
 <script>
-	document.querySelector('a#statusses-tab').classList.add('active');
+	document.querySelector('a#statuses-tab').classList.add('active');
 </script>
 
 {% endblock %}

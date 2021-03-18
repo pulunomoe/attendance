@@ -32,7 +32,7 @@ class StatusModel extends Model
 
 	public function create(int $departmentId, string $name, string $description): ?int
 	{
-		$stmt = $this->pdo->prepare('INSERT INTO statuses (department_id, name, description)');
+		$stmt = $this->pdo->prepare('INSERT INTO statuses (department_id, name, description) VALUES (?, ?, ?)');
 		$stmt->execute([$departmentId, $name, $description]);
 
 		return $this->pdo->lastInsertId();

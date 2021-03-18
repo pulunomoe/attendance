@@ -5,6 +5,7 @@
 {% block content %}
 
 {% include '__commons/success.twig' %}
+{% include '__commons/errors.twig' %}
 
 {{ html.breadcrumbs([
 	{link: '#', label: 'Configuration'},
@@ -24,7 +25,7 @@
 
 <ul class="nav nav-tabs mb-4">
 	<li class="nav-item">
-		<a href="/departments/view/{{ department.id }}/statuses" class="nav-link" id="statusses-tab">Statuses</a>
+		<a href="/departments/view/{{ department.id }}/statuses" class="nav-link" id="statuses-tab">Statuses</a>
 	</li>
 </ul>
 

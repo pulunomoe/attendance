@@ -54,7 +54,7 @@ class StatusController extends Controller
 			}
 		}
 
-		return $this->render($request, $response, 'statuses/form.php', [
+		return $this->render($request, $response, 'statuses/form.twig', [
 			'department' => $department,
 			'status' => $status ?? null,
 			'errors' => $this->getFlash('errors')
@@ -66,30 +66,71 @@ class StatusController extends Controller
 		$id = $request->getParam('id');
 		$departmentId = $request->getParam('department_id');
 		$name = $request->getParam('name');
-		$email = $request->getParam('email');
-		$password = $request->getParam('password');
-		$confirm = $request->getParam('confirm');
 		$description = $request->getParam('description');
+
+		$baseUrl = '/departments/view/'.$departmentId.'/statuses';
 
 		if (empty($id)) {
 			$errors = $this->statusModel->validateCreate($departmentId, $name);
 		} else {
-			$errors = $this->statusModel->validateUpdate($id, $name);
+			$errors = $this->statusModel->validateUpdate($name);
 		}
 
 		if (!empty($errors)) {
-			$this->setFlash('errors', $errors);
-			$url = empty($id) ? '/depart/form' : '/employees/form/'.$id;
+			$this->setFlash('errors', $errors);;
+			$url = empty($id) ? $baseUrl.'/form' : $baseUrl.'/form/'.$id;
 			return $response->withRedirect($url);
 		}
 
 		if (empty($id)) {
-			$id = $this->employeeModel->create($name, $email, $password, $description);
+			$this->statusModel->create($departmentId, $name, $description);
 		} else {
-			$this->employeeModel->update($id, $name, $email, $description);
+			$this->statusModel->update($id, $name, $description);
 		}
 
-		$this->setFlash('success', 'Employee has been successfully saved');
-		return $response->withRedirect('/employees/view/'.$id);
+		$this->setFlash('success', 'Status has been successfully saved');
+		return $response->withRedirect($baseUrl);
+	}
+
+	public function delete(ServerRequest $request, Response $response, array $args): ResponseInterface
+	{
+		$departmentId = $args['departmentId'];
+		$id = $args['id'];
+
+		$department = $this->departmentModel->findOne($departmentId);
+		if (empty($department)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		$status = $this->statusModel->findOne($id);
+		if (empty($status)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		return $this->render($request, $response, 'statuses/delete.twig', [
+			'department' => $department,
+			'status' => $status
+		]);
+	}
+
+	public function deletePost(ServerRequest $request, Response $response): ResponseInterface
+	{
+		$id = $request->getParam('id', -1);
+		$departmentId = $request->getParam('id', -1);
+
+		$department = $this->departmentModel->findOne($id);
+		if (empty($department)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		$status = $this->statusModel->findOne($id);
+		if (empty($status)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		$this->statusModel->delete($id);
+
+		$this->setFlash('success', 'Status has been successfully deleted');
+		return $response->withRedirect('/departments/view/'.$departmentId.'/statuses');
 	}
 }
