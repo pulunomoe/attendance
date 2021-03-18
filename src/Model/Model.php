@@ -2,6 +2,7 @@
 
 namespace Pulunomoe\Attendance\Model;
 
+use DateTime;
 use PDO;
 
 abstract class Model
@@ -11,5 +12,12 @@ abstract class Model
 	public function __construct(PDO $pdo)
 	{
 		$this->pdo = $pdo;
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+
+	protected function parseDate(string $date): string
+	{
+		return (new DateTime($date))->format('Y-m-d H:i:s');
 	}
 }

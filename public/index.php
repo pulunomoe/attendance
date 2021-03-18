@@ -4,6 +4,7 @@ session_start();
 
 use Pulunomoe\Attendance\Controller\DepartmentController;
 use Pulunomoe\Attendance\Controller\EmployeeController;
+use Pulunomoe\Attendance\Controller\HolidayController;
 use Pulunomoe\Attendance\Controller\StatusController;
 use Slim\Factory\AppFactory;
 use Slim\Views\PhpRenderer;
@@ -31,6 +32,7 @@ $app->add(TwigMiddleware::create($app, $twig));
 $departmentController = new DepartmentController($pdo);
 $employeeController = new EmployeeController($pdo);
 $statusController = new StatusController($pdo);
+$holidayController = new HolidayController($pdo);
 
 $app->get('/departments', [$departmentController, 'index']);
 $app->get('/departments/view/{id}', [$departmentController, 'view']);
@@ -51,5 +53,11 @@ $app->get('/departments/view/{departmentId}/statuses/form[/{id}]', [$statusContr
 $app->post('/statuses/form', [$statusController, 'formPost']);
 $app->get('/departments/view/{departmentId}/statuses/delete/{id}', [$statusController, 'delete']);
 $app->post('/statuses/delete', [$statusController, 'deletePost']);
+
+$app->get('/departments/view/{departmentId}/holidays', [$holidayController, 'index']);
+$app->get('/departments/view/{departmentId}/holidays/form[/{id}]', [$holidayController, 'form']);
+$app->post('/holidays/form', [$holidayController, 'formPost']);
+$app->get('/departments/view/{departmentId}/holidays/delete/{id}', [$holidayController, 'delete']);
+$app->post('/holidays/delete', [$holidayController, 'deletePost']);
 
 $app->run();

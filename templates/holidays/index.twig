@@ -1,0 +1,41 @@
+{% extends 'departments/view.twig' %}
+
+{% import '__macros/html.twig' as html %}
+
+{% block subcontent %}
+
+{{ html.subPageHeader('Holiday list', [
+	{link: '/departments/view/'~department.id~'/holidays/form', class: 'btn-primary', label: 'Add new holiday'}
+]) }}
+
+<table class="table table-hover">
+	<thead>
+	<tr>
+		<th>Name</th>
+		<th>Date</th>
+		<th>Description</th>
+		<th></th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for holiday in holidays %}
+		<tr>
+			<td>{{ holiday.name }}</a></td>
+			<td>{{ holiday.date|date('l, d F Y') }}</td>
+			<td>{{ holiday.description }}</td>
+			<td width="1%" style="white-space: nowrap">
+				<div class="btn-group btn-group-sm">
+					<a href="/departments/view/{{ department.id }}/holidays/form/{{ holiday.id }}" class="btn btn-info">Edit</a>
+					<a href="/departments/view/{{ department.id }}/holidays/delete/{{ holiday.id }}" class="btn btn-danger">Delete</a>
+				</div>
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+<script>
+	document.querySelector('a#holidays-tab').classList.add('active');
+</script>
+
+{% endblock %}
