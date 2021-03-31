@@ -4,6 +4,7 @@ namespace Pulunomoe\Attendance\Controller;
 
 use PDO;
 use Psr\Http\Message\ResponseInterface;
+use Pulunomoe\Attendance\Model\AssignmentModel;
 use Pulunomoe\Attendance\Model\EmployeeModel;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Http\Response;
@@ -12,11 +13,13 @@ use Slim\Http\ServerRequest;
 class EmployeeController extends Controller
 {
 	private EmployeeModel $employeeModel;
+	private AssignmentModel $assignmentModel;
 
 	public function __construct(PDO $pdo)
 	{
 		parent::__construct($pdo);
 		$this->employeeModel = new EmployeeModel($pdo);
+		$this->assignmentModel = new AssignmentModel($pdo);
 	}
 
 	public function index(ServerRequest $request, Response $response): ResponseInterface
@@ -36,7 +39,7 @@ class EmployeeController extends Controller
 
 		return $this->render($request, $response, 'employees/view.twig', [
 			'employee' => $employee,
-			'employees' => [],
+			'assignments' => $this->assignmentModel->findAllByEmployee($args['id']),
 			'success' => $this->getFlash('success')
 		]);
 	}

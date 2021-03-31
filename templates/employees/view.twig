@@ -23,4 +23,20 @@
 	{label: 'Description', value: employee.description}
 ]) }}
 
+<ul class="nav nav-tabs mb-4" id="subcontent-tabs">
+	<li class="nav-item">
+		<a href="/employees/view/{{ employee.id }}/assignments" class="nav-link" id="assignments-tab">Assignments</a>
+	</li>
+</ul>
+
+{% block subcontent %}
+{% endblock %}
+
+<script>
+	let tab = document.querySelector('ul.nav-tabs a.nav-link.active');
+	if (!tab) {
+		document.querySelector('a#assignments-tab').click();
+	}
+</script>
+
 {% endblock %}

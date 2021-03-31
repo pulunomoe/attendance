@@ -20,6 +20,18 @@ class DepartmentModel extends Model
 		return $stmt->fetch();
 	}
 
+	public function findAllForSelect(): array
+	{
+		$departments = $this->findAll();
+
+		$options = [];
+		foreach ($departments as $department) {
+			$options[$department->id] = $department->name;
+		}
+
+		return $options;
+	}
+
 	public function create(string $name, string $description): ?int
 	{
 		$stmt = $this->pdo->prepare('INSERT INTO departments (name, description) VALUES (?, ?)');

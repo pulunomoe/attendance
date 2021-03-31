@@ -23,7 +23,10 @@
 	{label: 'Description', value: department.description}
 ]) }}
 
-<ul class="nav nav-tabs mb-4">
+<ul class="nav nav-tabs mb-4" id="subcontent-tabs">
+	<li class="nav-item">
+		<a href="/departments/view/{{ department.id }}/assignments" class="nav-link" id="assignments-tab">Assignments</a>
+	</li>
 	<li class="nav-item">
 		<a href="/departments/view/{{ department.id }}/holidays" class="nav-link" id="holidays-tab">Holidays</a>
 	</li>
@@ -34,5 +37,12 @@
 
 {% block subcontent %}
 {% endblock %}
+
+<script>
+	let tab = document.querySelector('ul.nav-tabs a.nav-link.active');
+	if (!tab) {
+		document.querySelector('a#assignments-tab').click();
+	}
+</script>
 
 {% endblock %}

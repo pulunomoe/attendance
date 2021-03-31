@@ -1,0 +1,33 @@
+{% extends parent~'s/view.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% set parentId = attribute(attribute(_context, parent), 'id') %}
+{% set optionName = attribute(_context, 'option') %}
+
+{% block subcontent %}
+
+{{ html.subpageHeader((assignment ? 'Edit' : 'Add new')~' assignment', [
+	{link: '/'~parent~'s/view/'~parentId~'/assignments', class: 'btn-outline-secondary', label: 'Back to list'}
+]) }}
+
+<form method="post" action="/assignments/form">
+	{{ form.hidden('id', assignment.id) }}
+	{{ form.hidden('parent', parent) }}
+	{{ form.hidden(parent~'_id', parentId) }}
+	{% if not assignment %}
+		{{ form.select(optionName~'_id', option|capitalize, attribute(_context, optionName), attribute(assignment, optionId)) }}
+	{% endif %}
+	{{ form.select('is_manager', 'Manager?', {'0': 'No', '1': 'Yes'}, assignment.is_manager) }}
+	{{ form.input('start_date', 'Start date', assignment.start_date, 'date') }}
+	{{ form.input('end_date', 'End date', assignment.end_date, 'date') }}
+	{{ form.textarea('description', 'Description', assignment.description) }}
+	{{ form.submit() }}
+</form>
+
+<script>
+	document.querySelector('a#assignments-tab').classList.add('active');
+</script>
+
+{% endblock %}

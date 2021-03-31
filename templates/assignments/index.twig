@@ -1,0 +1,57 @@
+{% extends parent~'s/view.twig' %}
+
+{% import '__macros/html.twig' as html %}
+
+{% set parentId = attribute(attribute(_context, parent), 'id') %}
+
+{% block subcontent %}
+
+{{ html.subPageHeader('Assignment list', [
+	{link: '/'~parent~'s/view/'~parentId~'/assignments/form', class: 'btn-primary', label: 'Add new assignment'}
+]) }}
+
+<table class="table table-hover">
+	<thead>
+	<tr>
+		{% if parent == 'department' %}
+			<th>Employee name</th>
+			<th>Employee email</th>
+		{% else %}
+			<th>Department</th>
+		{% endif %}
+		<th>Manager?</th>
+		<th>Start date</th>
+		<th>End date</th>
+		<th>Description</th>
+		<th></th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for assignment in assignments %}
+		<tr>
+			{% if parent == 'department' %}
+				<td><a href="/employees/view/{{ assignment.employee_id }}">{{ assignment.employee_name }}</a></td>
+				<td>{{ assignment.employee_email }}</a></td>
+			{% else %}
+				<td><a href="/departments/view/{{ assignment.department_id }}">{{ assignment.department_name }}</a></td>
+			{% endif %}
+			<td>{{ assignment.is_manager ? 'Yes' : 'No' }}</a></td>
+			<td>{{ assignment.start_date|date('l, d F Y') }}</td>
+			<td>{{ assignment.end_date ? assignment.end_date|date('l, d F Y') : 'Undefined' }}</td>
+			<td>{{ assignment.description }}</td>
+			<td width="1%" style="white-space: nowrap">
+				<div class="btn-group btn-group-sm">
+					<a href="/{{ parent }}s/view/{{ parentId }}/assignments/form/{{ assignment.id }}" class="btn btn-info">Edit</a>
+					<a href="/{{ parent }}s/view/{{ parentId }}/assignments/delete/{{ assignment.id }}" class="btn btn-danger">Delete</a>
+				</div>
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+<script>
+	document.querySelector('a#assignments-tab').classList.add('active');
+</script>
+
+{% endblock %}

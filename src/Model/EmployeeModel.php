@@ -12,6 +12,18 @@ class EmployeeModel extends Model
 		return $stmt->fetchAll();
 	}
 
+	public function findAllForSelect(): array
+	{
+		$employees = $this->findAll();
+
+		$options = [];
+		foreach ($employees as $employee) {
+			$options[$employee->id] = $employee->name . '<' . $employee->email . '>';
+		}
+
+		return $options;
+	}
+
 	public function findOne(int $id): ?object
 	{
 		$stmt = $this->pdo->prepare('SELECT * FROM employees WHERE id = ? AND admin = 0');

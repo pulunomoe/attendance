@@ -2,6 +2,7 @@
 
 session_start();
 
+use Pulunomoe\Attendance\Controller\AssignmentController;
 use Pulunomoe\Attendance\Controller\DepartmentController;
 use Pulunomoe\Attendance\Controller\EmployeeController;
 use Pulunomoe\Attendance\Controller\HolidayController;
@@ -10,6 +11,7 @@ use Slim\Factory\AppFactory;
 use Slim\Views\PhpRenderer;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
+use Twig\Extension\DebugExtension;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -26,13 +28,15 @@ $pdo = new PDO(
 	]
 );
 
-$twig = Twig::create(__DIR__ . '/../templates/');
+$twig = Twig::create(__DIR__ . '/../templates/', ['debug' => true]);
+$twig->addExtension(new DebugExtension());
 $app->add(TwigMiddleware::create($app, $twig));
 
 $departmentController = new DepartmentController($pdo);
 $employeeController = new EmployeeController($pdo);
 $statusController = new StatusController($pdo);
 $holidayController = new HolidayController($pdo);
+$assignmentController = new AssignmentController($pdo);
 
 $app->get('/departments', [$departmentController, 'index']);
 $app->get('/departments/view/{id}', [$departmentController, 'view']);
@@ -59,5 +63,14 @@ $app->get('/departments/view/{departmentId}/holidays/form[/{id}]', [$holidayCont
 $app->post('/holidays/form', [$holidayController, 'formPost']);
 $app->get('/departments/view/{departmentId}/holidays/delete/{id}', [$holidayController, 'delete']);
 $app->post('/holidays/delete', [$holidayController, 'deletePost']);
+
+$app->get('/departments/view/{departmentId}/assignments', [$assignmentController, 'indexFromDepartment']);
+$app->get('/employees/view/{employeeId}/assignments', [$assignmentController, 'indexFromEmployee']);
+$app->get('/departments/view/{departmentId}/assignments/form[/{id}]', [$assignmentController, 'formFromDepartment']);
+$app->get('/employees/view/{employeeId}/assignments/form[/{id}]', [$assignmentController, 'formFromEmployee']);
+$app->post('/assignments/form', [$assignmentController, 'formPost']);
+$app->get('/departments/view/{departmentId}/assignments/delete/{id}', [$assignmentController, 'deleteFromDepartment']);
+$app->get('/employees/view/{employeeId}/assignments/delete/{id}', [$assignmentController, 'deleteFromEmployee']);
+$app->post('/assignments/delete', [$assignmentController, 'deletePost']);
 
 $app->run();

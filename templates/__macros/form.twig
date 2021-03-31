@@ -13,6 +13,19 @@
 	</div>
 {% endmacro %}
 
+{% macro select(name, label, options, value) %}
+	<div class="row mb-3">
+		<label for="f-{{ name }}" class="col-2 col-form-label">{{ label }}</label>
+		<div class="col-10">
+			<select name="{{ name }}" id="f-{{ name }}" class="form-select form-select-sm">
+				{% for v, l in options %}
+					<option value="{{ v }}" {{ v == value ? 'selected' : '' }}>{{ l }}</option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+{% endmacro %}
+
 {% macro textarea(name, label, value, rows = 3) %}
 	<div class="row mb-3">
 		<label for="f-{{ name }}" class="col-2 col-form-label">{{ label }}</label>

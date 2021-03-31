@@ -16,8 +16,8 @@ abstract class Model
 
 	////////////////////////////////////////////////////////////////////////////
 
-	protected function parseDate(string $date): string
+	protected function parseDate(string $date): ?string
 	{
-		return (new DateTime($date))->format('Y-m-d H:i:s');
+		return empty($date) ? null : (new DateTime($date))->format('Y-m-d H:i:s');
 	}
 }
