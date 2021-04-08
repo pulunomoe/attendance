@@ -6,9 +6,11 @@
 
 {% block subcontent %}
 
-{{ html.subPageHeader('Assignment list', [
+{% set assignmentSubPageHeaderLinks = session.employee.admin ? [
 	{link: '/'~parent~'s/view/'~parentId~'/assignments/form', class: 'btn-primary', label: 'Add new assignment'}
-]) }}
+] : [] %}
+
+{{ html.subPageHeader('Assignment list', assignmentSubPageHeaderLinks) }}
 
 <table class="table table-hover">
 	<thead>
@@ -19,7 +21,6 @@
 		{% else %}
 			<th>Department</th>
 		{% endif %}
-		<th>Manager?</th>
 		<th>Start date</th>
 		<th>End date</th>
 		<th>Description</th>
@@ -30,19 +31,28 @@
 	{% for assignment in assignments %}
 		<tr>
 			{% if parent == 'department' %}
-				<td><a href="/employees/view/{{ assignment.employee_id }}">{{ assignment.employee_name }}</a></td>
+				<td>
+					{% if session.employee.admin %}
+						<a href="/employees/view/{{ assignment.employee_id }}">{{ assignment.employee_name }}</a>
+					{% else %}
+						{{ assignment.employee_name }}
+					{% endif %}
+				</td>
 				<td>{{ assignment.employee_email }}</a></td>
 			{% else %}
 				<td><a href="/departments/view/{{ assignment.department_id }}">{{ assignment.department_name }}</a></td>
 			{% endif %}
-			<td>{{ assignment.is_manager ? 'Yes' : 'No' }}</a></td>
 			<td>{{ assignment.start_date|date('l, d F Y') }}</td>
 			<td>{{ assignment.end_date ? assignment.end_date|date('l, d F Y') : 'Undefined' }}</td>
 			<td>{{ assignment.description }}</td>
 			<td width="1%" style="white-space: nowrap">
 				<div class="btn-group btn-group-sm">
-					<a href="/{{ parent }}s/view/{{ parentId }}/assignments/form/{{ assignment.id }}" class="btn btn-info">Edit</a>
-					<a href="/{{ parent }}s/view/{{ parentId }}/assignments/delete/{{ assignment.id }}" class="btn btn-danger">Delete</a>
+					{% if session.employee.admin %}
+						<a href="/{{ parent }}s/view/{{ parentId }}/assignments/form/{{ assignment.id }}" class="btn btn-info">Edit</a>
+						<a href="/{{ parent }}s/view/{{ parentId }}/assignments/delete/{{ assignment.id }}" class="btn btn-danger">Delete</a>
+					{% else %}
+						<a href="/departments/view/{{ department.id }}/assignments/view/{{ assignment.id }}" class="btn btn-primary">Details</a>
+					{% endif %}
 				</div>
 			</td>
 		</tr>

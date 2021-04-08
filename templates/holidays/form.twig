@@ -10,6 +10,7 @@
 ]) }}
 
 <form method="post" action="/holidays/form">
+	{{ form.csrf(csrf.key, csrf.value) }}
 	{{ form.hidden('id', holiday.id) }}
 	{{ form.hidden('department_id', department.id) }}
 	{{ form.input('name', 'Name', holiday.name) }}

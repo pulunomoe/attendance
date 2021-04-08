@@ -6,7 +6,6 @@
 {% block content %}
 
 {{ html.breadcrumbs([
-	{link: '#', label: 'Configuration'},
 	{link: '/departments', label: 'Departments'},
 	{link: '/departments/view/'~department.id, label: department.name},
 	{link: '/departments/delete/'~department.id, label: 'Delete'}

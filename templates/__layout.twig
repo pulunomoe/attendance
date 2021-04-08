@@ -6,8 +6,12 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Attendance</title>
 	<link href="/css/bootstrap.min.css" rel="stylesheet">
+	<link href="/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 	<script src="/js/bootstrap.bundle.min.js"></script>
 	<script src="/js/feather.min.js"></script>
+	<script src="/js/jquery.slim.min.js"></script>
+	<script src="/js/jquery.dataTables.min.js"></script>
+	<script src="/js/dataTables.bootstrap5.min.js"></script>
 </head>
 
 <body>
@@ -19,11 +23,19 @@
 				<li class="nav-item">
 					<a class="nav-link" href="/">Dashboard</a>
 				</li>
+				{% if session.employee.admin %}
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Configuration</a>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item" href="/departments">Departments</a></li>
+							<li><a class="dropdown-item" href="/employees">Employees</a></li>
+						</ul>
+					</li>
+				{% endif %}
 				<li class="nav-item dropdown">
-					<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Configuration</a>
+					<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Hello, {{ session.employee.name }}</a>
 					<ul class="dropdown-menu">
-						<li><a class="dropdown-item" href="/departments">Departments</a></li>
-						<li><a class="dropdown-item" href="/employees">Employees</a></li>
+						<li><a class="dropdown-item" href="/logout">Logout</a></li>
 					</ul>
 				</li>
 			</ul>
@@ -37,6 +49,7 @@
 	<script>
 		(function () {
 			feather.replace();
+            $('table').DataTable();
 		})();
 	</script>
 

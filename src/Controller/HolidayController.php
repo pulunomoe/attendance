@@ -4,6 +4,7 @@ namespace Pulunomoe\Attendance\Controller;
 
 use PDO;
 use Psr\Http\Message\ResponseInterface;
+use Pulunomoe\Attendance\Middleware\AuthenticationMiddleware;
 use Pulunomoe\Attendance\Model\DepartmentModel;
 use Pulunomoe\Attendance\Model\HolidayModel;
 use Slim\Exception\HttpNotFoundException;
@@ -31,9 +32,12 @@ class HolidayController extends Controller
 			throw new HttpNotFoundException($request);
 		}
 
+		AuthenticationMiddleware::managerOnly($request, $department);
+
 		return $this->render($request, $response, 'holidays/index.twig', [
 			'department' => $department,
-			'holidays' => $this->holidayModel->findAllByDepartment($args['departmentId'])
+			'holidays' => $this->holidayModel->findAllByDepartment($args['departmentId']),
+			'success' => $this->getFlash('success')
 		]);
 	}
 
@@ -47,6 +51,8 @@ class HolidayController extends Controller
 			throw new HttpNotFoundException($request);
 		}
 
+		AuthenticationMiddleware::managerOnly($request, $department);
+
 		if (!empty($id)) {
 			$holiday = $this->holidayModel->findOne($id);
 			if (empty($holiday)) {
@@ -55,6 +61,7 @@ class HolidayController extends Controller
 		}
 
 		return $this->render($request, $response, 'holidays/form.twig', [
+			'csrf' => $this->generateCsrfToken(),
 			'department' => $department,
 			'holiday' => $holiday ?? null,
 			'errors' => $this->getFlash('errors')
@@ -63,6 +70,8 @@ class HolidayController extends Controller
 
 	public function formPost(ServerRequest $request, Response $response): ResponseInterface
 	{
+		$this->verifyCsrfToken($request);
+
 		$id = $request->getParam('id');
 		$departmentId = $request->getParam('department_id');
 		$name = $request->getParam('name');
@@ -103,12 +112,15 @@ class HolidayController extends Controller
 			throw new HttpNotFoundException($request);
 		}
 
+		AuthenticationMiddleware::managerOnly($request, $department);
+
 		$holiday = $this->holidayModel->findOne($id);
 		if (empty($holiday)) {
 			throw new HttpNotFoundException($request);
 		}
 
 		return $this->render($request, $response, 'holidays/delete.twig', [
+			'csrf' => $this->generateCsrfToken(),
 			'department' => $department,
 			'holiday' => $holiday
 		]);
@@ -116,6 +128,8 @@ class HolidayController extends Controller
 
 	public function deletePost(ServerRequest $request, Response $response): ResponseInterface
 	{
+		$this->verifyCsrfToken($request);
+
 		$id = $request->getParam('id', -1);
 		$departmentId = $request->getParam('id', -1);
 

@@ -1,0 +1,49 @@
+{% extends 'departments/view.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% set parentId = attribute(attribute(_context, parent), 'id') %}
+{% set optionName = attribute(_context, 'option') %}
+
+{% block subcontent %}
+
+{{ html.subPageHeader('Assignment details', [
+	{link: '/departments/view/'~department.id~'/assignments', class: 'btn-outline-secondary', label: 'Back to list'}
+]) }}
+
+{{ html.definitions([
+	{label: 'Employee', value: assignment.employee_name~' <'~assignment.employee_email~'>'},
+	{label: 'Start date', value: assignment.start_date|date('l, d F Y')},
+	{label: 'End date', value: assignment.end_date ? assignment.end_date|date('l, d F Y') : 'Undefined'},
+	{label: 'Description', value: assignment.description}
+]) }}
+
+{{ html.subPageHeader((attendance ? 'Edit' : 'Add new')~' attendance', [
+	{link: '/departments/view/'~department.id~'/assignments/view/'~assignment.id, class: 'btn-outline-secondary', label: 'Back to list'}
+]) }}
+
+{% if attendance %}
+	{{ html.definitions([
+		{label: 'Date', value: attendance.date|date('l, d F Y')}
+	]) }}
+{% endif %}
+
+<form method="post" action="/attendances/form">
+	{{ form.csrf(csrf.key, csrf.value) }}
+	{{ form.hidden('id', attendance.id) }}
+	{{ form.hidden('department_id', department.id) }}
+	{{ form.hidden('assignment_id', assignment.id) }}
+	{% if not attendance %}
+		{{ form.input('date', 'Date', attendance.date, 'date') }}
+	{% endif %}
+	{{ form.select('status_id', 'Status', statuses, attendance.status_id) }}
+	{{ form.textarea('description', 'Description', attendance.description) }}
+	{{ form.submit() }}
+</form>
+
+<script>
+	document.querySelector('a#assignments-tab').classList.add('active');
+</script>
+
+{% endblock %}

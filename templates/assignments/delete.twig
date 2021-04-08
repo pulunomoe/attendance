@@ -14,7 +14,6 @@
 {{ html.definitions([
 	{label: 'Employee', value: assignment.employee_name~' <'~assignment.employee_email~'>'},
 	{label: 'Department', value: assignment.department_name},
-	{label: 'Manager', value: assignment.is_manager ? 'Yes' : 'No'},
 	{label: 'Start date', value: assignment.start_date|date('l, d F Y')},
 	{label: 'End date', value: assignment.end_date ? assignment.end_date|date('l, d F Y') : 'Undefined'},
 	{label: 'Description', value: assignment.description}
@@ -23,6 +22,7 @@
 <p class="fw-bold border-bottom mt-3">Are you sure you want to delete this assignment? All data associated with this assignment will also be deleted!</p>
 
 <form method="post" action="/assignments/delete">
+	{{ form.csrf(csrf.key, csrf.value) }}
 	{{ form.hidden('id', assignment.id) }}
 	{{ form.hidden('parent', parent) }}
 	{{ form.hidden(parent~'_id', parentId) }}

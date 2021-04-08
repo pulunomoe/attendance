@@ -7,7 +7,6 @@
 {% include '__commons/success.twig' %}
 
 {{ html.breadcrumbs([
-	{link: '#', label: 'Configuration'},
 	{link: '/departments', label: 'Departments'}
 ]) }}
 
@@ -19,7 +18,7 @@
 	<thead>
 		<tr>
 			<th>Name</th>
-			<th>Employees</th>
+			<th>Manager</th>
 			<th>Description</th>
 		</tr>
 	</thead>
@@ -31,8 +30,12 @@
 						{{ department.name }}
 					</a>
 				</td>
-				<td>%</td>
-				<td>{{ department.descriptions }}</td>
+				<td>
+					<a href="/employees/view/{{ department.manager_id }}">
+						{{ department.manager_name }} &lt;{{ department.manager_email }}&gt;
+					</a>
+				</td>
+				<td>{{ department.description }}</td>
 			</tr>
 		{% endfor %}
 	</tbody>

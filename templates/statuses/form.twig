@@ -10,6 +10,7 @@
 ]) }}
 
 <form method="post" action="/statuses/form">
+	{{ form.csrf(csrf.key, csrf.value) }}
 	{{ form.hidden('id', status.id) }}
 	{{ form.hidden('department_id', department.id) }}
 	{{ form.input('name', 'Name', status.name) }}

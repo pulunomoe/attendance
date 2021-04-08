@@ -17,6 +17,7 @@
 <p class="fw-bold border-bottom mt-3">Are you sure you want to delete this holiday? All data associated with this holiday will also be deleted!</p>
 
 <form method="post" action="/holidays/delete">
+	{{ form.csrf(csrf.key, csrf.value) }}
 	{{ form.hidden('id', holiday.id) }}
 	{{ form.hidden('department_id', department.id) }}
 	{{ form.confirm() }}

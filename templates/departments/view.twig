@@ -7,19 +7,27 @@
 {% include '__commons/success.twig' %}
 {% include '__commons/errors.twig' %}
 
-{{ html.breadcrumbs([
-	{link: '#', label: 'Configuration'},
-	{link: '/departments', label: 'Departments'},
-	{link: '/departments/view/'~department.id, label: department.name}
-]) }}
+{% set breadcrumbLinks = session.employee.admin ? [
+	{link: '/departments', label: 'Departments'}
+] : [
+	{link: '/', label: 'Dashboard'},
+	{link: '#', label: 'My departments'}
+] %}
 
-{{ html.pageHeader('Department: '~department.name, [
+{{ html.breadcrumbs(breadcrumbLinks|merge([
+	{link: '/departments/view/'~department.id, label: department.name}
+])) }}
+
+{% set departmentPageHeaderLinks = session.employee.admin ? [
 	{link: '/departments', class: 'btn-outline-secondary', label: 'Back to list'},
 	{link: '/departments/form/'~department.id, class: 'btn-info', label: 'Edit'},
 	{link: '/departments/delete/'~department.id, class: 'btn-danger', label: 'Delete'}
-]) }}
+] : [] %}
+
+{{ html.pageHeader('Department: '~department.name, departmentPageHeaderLinks) }}
 
 {{ html.definitions([
+	{label: 'Manager', value: department.manager_name~' <'~department.manager_email~'>'},
 	{label: 'Description', value: department.description}
 ]) }}
 

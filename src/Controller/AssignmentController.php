@@ -4,6 +4,8 @@ namespace Pulunomoe\Attendance\Controller;
 
 use PDO;
 use Psr\Http\Message\ResponseInterface;
+use Pulunomoe\Attendance\Middleware\AuthenticationMiddleware;
+use Pulunomoe\Attendance\Model\AttendanceModel;
 use Pulunomoe\Attendance\Model\DepartmentModel;
 use Pulunomoe\Attendance\Model\AssignmentModel;
 use Pulunomoe\Attendance\Model\EmployeeModel;
@@ -16,6 +18,7 @@ class AssignmentController extends Controller
 	private DepartmentModel $departmentModel;
 	private EmployeeModel $employeeModel;
 	private AssignmentModel $assignmentModel;
+	private AttendanceModel $attendanceModel;
 
 	public function __construct(PDO $pdo)
 	{
@@ -23,6 +26,7 @@ class AssignmentController extends Controller
 		$this->departmentModel = new DepartmentModel($pdo);
 		$this->employeeModel = new EmployeeModel($pdo);
 		$this->assignmentModel = new AssignmentModel($pdo);
+		$this->attendanceModel = new AttendanceModel($pdo);
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -46,6 +50,8 @@ class AssignmentController extends Controller
 			throw new HttpNotFoundException($request);
 		}
 
+		AuthenticationMiddleware::managerOnly($request, $$parent);
+
 		if ($parent == 'department') {
 			$assignment = $this->assignmentModel->findAllByDepartment($parentId);
 		} else {
@@ -55,7 +61,35 @@ class AssignmentController extends Controller
 		return $this->render($request, $response, 'assignments/index.twig', [
 			'parent' => $parent,
 			$parent => $$parent,
-			'assignments' => $assignment
+			'assignments' => $assignment,
+			'success' => $this->getFlash('success')
+		]);
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+
+	public function view(ServerRequest $request, Response $response, array $args): ResponseInterface
+	{
+		$departmentId = $args['departmentId'];
+		$id = $args['id'];
+
+		$department = $this->departmentModel->findOne($departmentId);
+		if (empty($department)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		AuthenticationMiddleware::managerOnly($request, $department);
+
+		$assignment = $this->assignmentModel->findOne($id);
+		if (empty($assignment)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		return $this->render($request, $response, 'assignments/view.twig', [
+			'department' => $department,
+			'assignment' => $assignment,
+			'attendances' => $this->attendanceModel->findAllByAssignment($args['id']),
+			'success' => $this->getFlash('success')
 		]);
 	}
 
@@ -82,6 +116,8 @@ class AssignmentController extends Controller
 			throw new HttpNotFoundException($request);
 		}
 
+		AuthenticationMiddleware::managerOnly($request, $$parent);
+
 		if (!empty($id)) {
 			$assignment = $this->assignmentModel->findOne($id);
 			if (empty($assignment)) {
@@ -98,6 +134,7 @@ class AssignmentController extends Controller
 		}
 
 		return $this->render($request, $response, 'assignments/form.twig', [
+			'csrf' => $this->generateCsrfToken(),
 			'parent' => $parent,
 			$parent => $$parent,
 			'option' => $option,
@@ -111,10 +148,11 @@ class AssignmentController extends Controller
 
 	public function formPost(ServerRequest $request, Response $response): ResponseInterface
 	{
+		$this->verifyCsrfToken($request);
+
 		$id = $request->getParam('id');
 		$departmentId = $request->getParam('department_id');
 		$employeeId = $request->getParam('employee_id');
-		$isManager = $request->getParam('is_manager');
 		$startDate = $request->getParam('start_date');
 		$endDate = $request->getParam('end_date');
 		$description = $request->getParam('description');
@@ -124,9 +162,9 @@ class AssignmentController extends Controller
 		$baseUrl = '/'.$parent.'s/view/'.$$parentIdName.'/assignments';
 
 		if (empty($id)) {
-			$errors = $this->assignmentModel->validateCreate($departmentId, $employeeId, $isManager, $startDate, $endDate);
+			$errors = $this->assignmentModel->validateCreate($departmentId, $employeeId, $startDate, $endDate);
 		} else {
-			$errors = $this->assignmentModel->validateUpdate($isManager, $startDate, $endDate);
+			$errors = $this->assignmentModel->validateUpdate($startDate, $endDate);
 		}
 
 		if (!empty($errors)) {
@@ -136,9 +174,9 @@ class AssignmentController extends Controller
 		}
 
 		if (empty($id)) {
-			$this->assignmentModel->create($departmentId, $employeeId, $isManager, $startDate, $endDate, $description);
+			$this->assignmentModel->create($departmentId, $employeeId, $startDate, $endDate, $description);
 		} else {
-			$this->assignmentModel->update($id, $isManager, $startDate, $endDate, $description);
+			$this->assignmentModel->update($id, $startDate, $endDate, $description);
 		}
 
 		$this->setFlash('success', 'Assignment has been successfully saved');
@@ -168,6 +206,8 @@ class AssignmentController extends Controller
 			throw new HttpNotFoundException($request);
 		}
 
+		AuthenticationMiddleware::managerOnly($request, $$parent);
+
 		if (!empty($id)) {
 			$assignment = $this->assignmentModel->findOne($id);
 			if (empty($assignment)) {
@@ -176,10 +216,10 @@ class AssignmentController extends Controller
 		}
 
 		return $this->render($request, $response, 'assignments/delete.twig', [
+			'csrf' => $this->generateCsrfToken(),
 			'parent' => $parent,
 			$parent => $$parent,
-			'assignment' => $assignment,
-			'errors' => $this->getFlash('errors')
+			'assignment' => $assignment
 		]);
 	}
 
@@ -187,6 +227,8 @@ class AssignmentController extends Controller
 
 	public function deletePost(ServerRequest $request, Response $response): ResponseInterface
 	{
+		$this->verifyCsrfToken($request);
+
 		$id = $request->getParam('id', -1);
 
 		$parent = $request->getParam('parent') == 'department' ? 'department' : 'employee';

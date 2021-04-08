@@ -24,7 +24,7 @@ class HolidayModel extends Model
 		return $stmt->fetchAll();
 	}
 
-	public function findOne(int $id): ?object
+	public function findOne(int $id): object|bool
 	{
 		$stmt = $this->pdo->prepare('SELECT * FROM holidays WHERE id = ?');
 		$stmt->execute([$id]);

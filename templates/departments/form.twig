@@ -8,7 +8,6 @@
 {% include '__commons/errors.twig' %}
 
 {% set breadcrumbs = [
-	{link: '#', label: 'Configuration'},
 	{link: '/departments', label: 'Departments'}
 ] %}
 {% if department %}
@@ -35,6 +34,7 @@
 <form method="post" action="/departments/form">
 	{{ form.hidden('id', department.id) }}
 	{{ form.input('name', 'Name', department.name) }}
+	{{ form.select('manager_id', 'Manager', managers, department.manager_id) }}
 	{{ form.input('description', 'Description', department.description) }}
 	{{ form.submit() }}
 </form>

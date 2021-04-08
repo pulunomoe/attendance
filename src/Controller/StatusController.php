@@ -4,6 +4,7 @@ namespace Pulunomoe\Attendance\Controller;
 
 use PDO;
 use Psr\Http\Message\ResponseInterface;
+use Pulunomoe\Attendance\Middleware\AuthenticationMiddleware;
 use Pulunomoe\Attendance\Model\DepartmentModel;
 use Pulunomoe\Attendance\Model\StatusModel;
 use Slim\Exception\HttpNotFoundException;
@@ -31,9 +32,12 @@ class StatusController extends Controller
 			throw new HttpNotFoundException($request);
 		}
 
+		AuthenticationMiddleware::managerOnly($request, $department);
+
 		return $this->render($request, $response, 'statuses/index.twig', [
 			'department' => $department,
-			'statuses' => $this->statusModel->findAllByDepartment($args['departmentId'])
+			'statuses' => $this->statusModel->findAllByDepartment($args['departmentId']),
+			'success' => $this->getFlash('success')
 		]);
 	}
 
@@ -47,6 +51,8 @@ class StatusController extends Controller
 			throw new HttpNotFoundException($request);
 		}
 
+		AuthenticationMiddleware::managerOnly($request, $department);
+
 		if (!empty($id)) {
 			$status = $this->statusModel->findOne($id);
 			if (empty($status)) {
@@ -55,6 +61,7 @@ class StatusController extends Controller
 		}
 
 		return $this->render($request, $response, 'statuses/form.twig', [
+			'csrf' => $this->generateCsrfToken(),
 			'department' => $department,
 			'status' => $status ?? null,
 			'errors' => $this->getFlash('errors')
@@ -63,6 +70,8 @@ class StatusController extends Controller
 
 	public function formPost(ServerRequest $request, Response $response): ResponseInterface
 	{
+		$this->verifyCsrfToken($request);
+
 		$id = $request->getParam('id');
 		$departmentId = $request->getParam('department_id');
 		$name = $request->getParam('name');
@@ -102,12 +111,15 @@ class StatusController extends Controller
 			throw new HttpNotFoundException($request);
 		}
 
+		AuthenticationMiddleware::managerOnly($request, $department);
+
 		$status = $this->statusModel->findOne($id);
 		if (empty($status)) {
 			throw new HttpNotFoundException($request);
 		}
 
 		return $this->render($request, $response, 'statuses/delete.twig', [
+			'csrf' => $this->generateCsrfToken(),
 			'department' => $department,
 			'status' => $status
 		]);
@@ -115,6 +127,8 @@ class StatusController extends Controller
 
 	public function deletePost(ServerRequest $request, Response $response): ResponseInterface
 	{
+		$this->verifyCsrfToken($request);
+
 		$id = $request->getParam('id', -1);
 		$departmentId = $request->getParam('id', -1);
 

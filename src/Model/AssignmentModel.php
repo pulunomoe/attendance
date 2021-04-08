@@ -34,7 +34,20 @@ class AssignmentModel extends Model
 		return $stmt->fetchAll();
 	}
 
-	public function findOne(int $id): ?object
+	public function findAllMine(): array
+	{
+		$assignments = $this->findAllByEmployee($_SESSION['employee']->id);
+
+		foreach ($assignments as &$assignment) {
+			$department = $this->departmentModel->findOne($assignment->department_id);
+			$assignment->manager_name = $department->manager_name;
+			$assignment->manager_email = $department->manager_email;
+		}
+
+		return $assignments;
+	}
+
+	public function findOne(int $id): object|bool
 	{
 		$stmt = $this->pdo->prepare('SELECT * FROM assignments_view WHERE id = ?');
 		$stmt->execute([$id]);
@@ -42,24 +55,24 @@ class AssignmentModel extends Model
 		return $stmt->fetch();
 	}
 
-	public function create(int $departmentId, int $employeeId, int $isManager, string $startDate, string $endDate, string $description): ?int
+	public function create(int $departmentId, int $employeeId, string $startDate, string $endDate, string $description): ?int
 	{
 		$startDate = $this->parseDate($startDate);
 		$endDate = $this->parseDate($endDate);
 
-		$stmt = $this->pdo->prepare('INSERT INTO assignments (department_id, employee_id, is_manager, start_date, end_date, description) VALUES (?, ?, ?, ?, ?, ?)');
-		$stmt->execute([$departmentId, $employeeId, $isManager, $startDate, $endDate, $description]);
+		$stmt = $this->pdo->prepare('INSERT INTO assignments (department_id, employee_id, start_date, end_date, description) VALUES (?, ?, ?, ?, ?)');
+		$stmt->execute([$departmentId, $employeeId, $startDate, $endDate, $description]);
 
 		return $this->pdo->lastInsertId();
 	}
 
-	public function update(int $id, int $isManager, string $startDate, string $endDate, string $description): void
+	public function update(int $id, string $startDate, string $endDate, string $description): void
 	{
 		$startDate = $this->parseDate($startDate);
 		$endDate = $this->parseDate($endDate);
 
-		$stmt = $this->pdo->prepare('UPDATE assignments SET is_manager = ?, start_date = ?, end_date = ?, description = ? WHERE id = ?');
-		$stmt->execute([$isManager, $startDate, $endDate, $description, $id]);
+		$stmt = $this->pdo->prepare('UPDATE assignments SET start_date = ?, end_date = ?, description = ? WHERE id = ?');
+		$stmt->execute([$startDate, $endDate, $description, $id]);
 	}
 
 	public function delete(int $id): void
@@ -70,9 +83,9 @@ class AssignmentModel extends Model
 
 	////////////////////////////////////////////////////////////////////////////
 
-	public function validateCreate(int $departmentId, int $employeeId, int $isManager, string $startDate, string $endDate): array
+	public function validateCreate(int $departmentId, int $employeeId, string $startDate, string $endDate): array
 	{
-		$errors = $this->validateUpdate($isManager, $startDate, $endDate);
+		$errors = $this->validateUpdate($startDate, $endDate);
 
 		if (empty($departmentId)) {
 			$errors[] = 'department is required';
@@ -93,13 +106,9 @@ class AssignmentModel extends Model
 		return $errors;
 	}
 
-	public function validateUpdate(int $isManager, string $startDate, string $endDate): array
+	public function validateUpdate(string $startDate, string $endDate): array
 	{
 		$errors = [];
-
-		if (!in_array($isManager, [0, 1])) {
-			$errors[] = 'manager status is invalid';
-		}
 
 		if (empty($startDate)) {
 			$errors[] = 'start date is required';

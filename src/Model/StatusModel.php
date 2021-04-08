@@ -22,7 +22,19 @@ class StatusModel extends Model
 		return $stmt->fetchAll();
 	}
 
-	public function findOne(int $id): ?object
+	public function findAllByDepartmentForSelect(int $departmentId): array
+	{
+		$statuses = $this->findAllByDepartment($departmentId);
+
+		$options = [];
+		foreach ($statuses as $status) {
+			$options[$status->id] = $status->name;
+		}
+
+		return $options;
+	}
+
+	public function findOne(int $id): object|bool
 	{
 		$stmt = $this->pdo->prepare('SELECT * FROM statuses WHERE id = ?');
 		$stmt->execute([$id]);
@@ -48,6 +60,16 @@ class StatusModel extends Model
 	{
 		$stmt = $this->pdo->prepare('DELETE FROM statuses WHERE id = ?');
 		$stmt->execute([$id]);
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+
+	public function isInDepartment(int $statusId, int $departmentId): bool
+	{
+		$stmt = $this->pdo->prepare('SELECT COUNT(id) FROM statuses WHERE department_id = ? AND id = ?');
+		$stmt->execute([$departmentId, $statusId]);
+
+		return $stmt->fetchColumn() == 1;
 	}
 
 	////////////////////////////////////////////////////////////////////////////
