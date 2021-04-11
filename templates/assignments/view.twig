@@ -3,9 +3,6 @@
 {% import '__macros/html.twig' as html %}
 {% import '__macros/form.twig' as form %}
 
-{% set parentId = attribute(attribute(_context, parent), 'id') %}
-{% set optionName = attribute(_context, 'option') %}
-
 {% block subcontent %}
 
 {{ html.subPageHeader('Assignment details', [

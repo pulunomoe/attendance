@@ -1,0 +1,24 @@
+{% extends 'departments/view.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% block subcontent %}
+
+{{ html.subpageHeader('Generate report', [
+	{link: '/departments/view/'~department.id~'/assignments', class: 'btn-outline-secondary', label: 'Back to list'}
+]) }}
+
+<form method="post" action="/assignments/report">
+	{{ form.csrf(csrf.key, csrf.value) }}
+	{{ form.hidden('department_id', department.id) }}
+	{{ form.input('start_date', 'Start date', null, 'date') }}
+	{{ form.input('end_date', 'End date', null, 'date') }}
+	{{ form.submit('Generate') }}
+</form>
+
+<script>
+	document.querySelector('a#assignments-tab').classList.add('active');
+</script>
+
+{% endblock %}

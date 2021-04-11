@@ -40,12 +40,12 @@
 	</div>
 {% endmacro %}
 
-{% macro submit(class='btn-primary', label = 'Save') %}
+{% macro submit(label = 'Save') %}
 	<div class="row">
 		<div class="col-2">
 		</div>
 		<div class="col-10">
-			<button type="submit" class="btn {{ class }}">{{ label }}</button>
+			<button type="submit" class="btn btn-primary">{{ label }}</button>
 		</div>
 	</div>
 {% endmacro %}

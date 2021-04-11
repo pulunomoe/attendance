@@ -2,6 +2,7 @@
 
 namespace Pulunomoe\Attendance\Model;
 
+use DateInterval;
 use DateTime;
 use Exception;
 use PDO;
@@ -10,12 +11,14 @@ class AssignmentModel extends Model
 {
 	private DepartmentModel $departmentModel;
 	private EmployeeModel $employeeModel;
+	private StatusModel $statusModel;
 
 	public function __construct(PDO $pdo)
 	{
 		parent::__construct($pdo);
 		$this->departmentModel = new DepartmentModel($pdo);
 		$this->employeeModel = new EmployeeModel($pdo);
+		$this->statusModel = new StatusModel($pdo);
 	}
 
 	public function findAllByDepartment(int $departmentId): array
@@ -117,15 +120,127 @@ class AssignmentModel extends Model
 		try {
 			new DateTime($startDate);
 		} catch (Exception $e) {
-			$errors = 'start date is invalid';
+			$errors[] = 'start date is invalid';
 		}
 
 		if (!empty($endDate)) {
 			try {
 				new DateTime($endDate);
 			} catch (Exception $e) {
-				$errors = 'end date is invalid';
+				$errors[] = 'end date is invalid';
 			}
+		}
+
+		return $errors;
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+
+	public function generateReportByDepartment(int $departmentId, string $startDate, string $endDate): string
+	{
+		$startDate = $this->parseDate($startDate);
+		$endDate = $this->parseDate($endDate);
+
+		$stmt = $this->pdo->prepare('SELECT * FROM reports_view WHERE department_id = ? AND date >= ? AND date <= ?');
+		$stmt->execute([$departmentId, $startDate, $endDate]);
+
+		$rows = $stmt->fetchAll();
+
+		$data = [];
+		$employees = [];
+		foreach ($rows as $row) {
+			$data[$row->date][$row->employee_name] = $row->status;
+			if (!array_key_exists($row->employee_name, $employees)) {
+				$employees[$row->employee_name] = [];
+			}
+		}
+
+		$csv[0][0] = 'employee';
+
+		for ($i = 0; $i < sizeof($employees); $i++) {
+			$csv[$i+1][0] = array_keys($employees)[$i];
+		}
+
+		$startDate = new DateTime($startDate);
+		$endDate = new DateTime($endDate);
+		$days = $startDate->diff($endDate)->days;
+
+		for ($i = 1; $i <= $days; $i++) {
+
+			$date = new DateTime($startDate->format('Y-m-d').' +'.($i-1).' days');
+			$csv[0][$i] = $date->format('Y-m-d');
+
+			for ($j = 0; $j < sizeof($employees); $j++) {
+				if (array_key_exists($csv[0][$i], $data)) {
+					$employee = array_keys($employees)[$j];
+					if (array_key_exists($employee, $data[$csv[0][$i]])) {
+						$status = $data[$csv[0][$i]][$employee];
+						$csv[$j+1][$i] = $status;
+						if (empty($employees[$employee][$status])) {
+							$employees[$employee][$status] = 1;
+						} else {
+							$employees[$employee][$status]++;
+						}
+					}
+				}
+				if (empty($csv[$j+1][$i])) {
+					$csv[$j+1][$i] = '';
+				}
+			}
+
+		}
+
+		$statuses = $this->statusModel->findAllByDepartment($departmentId);
+		foreach ($statuses as $status) {
+			$csv[0][] = $status->name;
+			for ($i = 0; $i < sizeof($employees); $i++) {
+				$employee = array_keys($employees)[$i];
+				$csv[$i+1][] = empty($employees[$employee][$status->name]) ? 0 : $employees[$employee][$status->name];
+			}
+		}
+
+		$output = '';
+		foreach ($csv as $row) {
+			foreach ($row as $col) {
+				$output .= '"'.$col."\",";
+			}
+			$output .= '$$$';
+			$output = str_replace(',$$$', "\n", $output);
+		}
+
+		return $output;
+	}
+
+	public function validateReport(int $departmentId, string $startDate, string $endDate): array
+	{
+		$errors = [];
+
+		if (empty($departmentId)) {
+			$errors[] = 'department is required';
+		}
+
+		if (empty($this->departmentModel->findOne($departmentId))) {
+			$errors[] = 'department is invalid';
+		}
+
+		if (empty($startDate)) {
+			$errors[] = 'start date is required';
+		}
+
+		try {
+			new DateTime($startDate);
+		} catch (Exception $e) {
+			$errors = 'start date is invalid';
+		}
+
+		if (empty($endDate)) {
+			$errors[] = 'end date is required';
+		}
+
+		try {
+			new DateTime($endDate);
+		} catch (Exception $e) {
+			$errors[] = 'end date is invalid';
 		}
 
 		return $errors;

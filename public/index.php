@@ -90,6 +90,9 @@ $app->get('/departments/view/{departmentId}/assignments/delete/{id}', [$assignme
 $app->get('/employees/view/{employeeId}/assignments/delete/{id}', [$assignmentController, 'deleteFromEmployee'])->add($admin);
 $app->post('/assignments/delete', [$assignmentController, 'deletePost'])->add($admin);
 
+$app->get('/departments/view/{departmentId}/assignments/report', [$assignmentController, 'report'])->add($everyone);
+$app->post('/assignments/report', [$assignmentController, 'reportPost'])->add($everyone);
+
 $app->get('/departments/view/{departmentId}/assignments/view/{assignmentId}/attendances/form[/{id}]', [$attendanceController, 'form'])->add($everyone);
 $app->post('/attendances/form', [$attendanceController, 'formPost'])->add($everyone);
 $app->get('/departments/view/{departmentId}/assignments/view/{assignmentId}/attendances/delete/{id}', [$attendanceController, 'delete'])->add($everyone);

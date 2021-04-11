@@ -8,7 +8,9 @@
 
 {% set assignmentSubPageHeaderLinks = session.employee.admin ? [
 	{link: '/'~parent~'s/view/'~parentId~'/assignments/form', class: 'btn-primary', label: 'Add new assignment'}
-] : [] %}
+] : [
+	{link: '/'~parent~'s/view/'~parentId~'/assignments/report', class: 'btn-primary', label: 'Generate report'}
+] %}
 
 {{ html.subPageHeader('Assignment list', assignmentSubPageHeaderLinks) }}
 

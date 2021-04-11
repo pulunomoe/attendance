@@ -143,7 +143,7 @@ class AttendanceController extends Controller
 		if (empty($department)) {
 			throw new HttpNotFoundException($request);
 		}
-		
+
 		AuthenticationMiddleware::managerOnly($request, $department);
 
 		$assignment = $this->assignmentModel->findOne($assignmentId);

@@ -253,4 +253,52 @@ class AssignmentController extends Controller
 		$this->setFlash('success', 'Assignment has been successfully deleted');
 		return $response->withRedirect($baseUrl);
 	}
+
+	////////////////////////////////////////////////////////////////////////////
+
+	public function report(ServerRequest $request, Response $response, array $args): ResponseInterface
+	{
+		$departmentId = $args['departmentId'];
+
+		$department = $this->departmentModel->findOne($departmentId);
+		if (empty($department)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		AuthenticationMiddleware::managerOnly($request, $department);
+
+		return $this->render($request, $response, 'assignments/report.twig', [
+			'csrf' => $this->generateCsrfToken(),
+			'department' => $department,
+			'errors' => $this->getFlash('errors')
+		]);
+	}
+
+	public function reportPost(ServerRequest $request, Response $response): ResponseInterface
+	{
+		$this->verifyCsrfToken($request);
+
+		$departmentId = $request->getParam('department_id');
+		$startDate = $request->getParam('start_date');
+		$endDate = $request->getParam('end_date');
+
+		$department = $this->departmentModel->findOne($departmentId);
+		if (empty($department)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		AuthenticationMiddleware::managerOnly($request, $department);
+
+		$errors = $this->assignmentModel->validateReport($departmentId, $startDate, $endDate);
+		if (!empty($errors)) {
+			$this->setFlash('errors', $errors);
+			return $response->withRedirect('/departments/view/'.$departmentId.'/assignments/report');
+		}
+
+		AuthenticationMiddleware::managerOnly($request, $department);
+
+		$report = $this->assignmentModel->generateReportByDepartment($departmentId, $startDate, $endDate);
+		return $response->withFileDownload(fopen('data://text/plain,'.$report,'r'), 'report.csv', 'text/csv');
+	}
+
 }
