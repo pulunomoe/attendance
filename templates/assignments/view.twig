@@ -1,0 +1,52 @@
+{% extends 'departments/view.twig' %}
+
+{% import '__macros/html.twig' as html %}
+
+{% block subcontent %}
+
+{{ html.subPageHeader('Assignment details', [
+	{link: '/departments/view/'~department.id~'/assignments', class: 'btn-outline-secondary', label: 'Back to list'}
+]) }}
+
+{{ html.definitions([
+	{label: 'Employee', value: assignment.employee_name~' <'~assignment.employee_email~'>'},
+	{label: 'Start date', value: assignment.start_date|date('l, d F Y')},
+	{label: 'End date', value: assignment.end_date ? assignment.end_date|date('l, d F Y') : 'Undefined'},
+	{label: 'Description', value: assignment.description}
+]) }}
+
+{{ html.subPageHeader('Attendance list', [
+	{link: '/departments/view/'~department.id~'/assignments/view/'~assignment.id~'/attendances/form', class: 'btn-primary', label: 'Add attendance'}
+]) }}
+
+<table class="table table-hover">
+	<thead>
+	<tr>
+		<th>Date</th>
+		<th>Status</th>
+		<th>Description</th>
+		<th></th>
+	</tr>
+	</thead>
+	<tbody>
+		{% for attendance in attendances %}
+			<tr>
+				<td>{{ attendance.date|date('d F Y') }}</td>
+				<td>{{ attendance.status }}</a></td>
+				<td>{{ attendance.description }}</td>
+				<td width="1%" style="white-space: nowrap">
+					<div class="btn-group btn-group-sm">
+						<a href="/departments/view/{{ department.id }}/assignments/view/{{ assignment.id }}/attendances/form/{{ attendance.id }}" class="btn btn-info">Edit</a>
+						<a href="/departments/view/{{ department.id }}/assignments/view/{{ assignment.id }}/attendances/delete/{{ attendance.id }}" class="btn btn-danger">Delete</a>
+					</div>
+				</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<script>
+	document.querySelector('a#assignments-tab').classList.add('active');
+</script>
+
+{% endblock %}

@@ -6,15 +6,27 @@ class EmployeeModel extends Model
 {
 	public function findAll(): array
 	{
-		$stmt = $this->pdo->prepare('SELECT * FROM employees');
+		$stmt = $this->pdo->prepare('SELECT * FROM employees WHERE admin = 0');
 		$stmt->execute();
 
 		return $stmt->fetchAll();
 	}
 
-	public function findOne(int $id): ?object
+	public function findAllForSelect(): array
 	{
-		$stmt = $this->pdo->prepare('SELECT * FROM employees WHERE id = ?');
+		$employees = $this->findAll();
+
+		$options = [];
+		foreach ($employees as $employee) {
+			$options[$employee->id] = $employee->name . '<' . $employee->email . '>';
+		}
+
+		return $options;
+	}
+
+	public function findOne(int $id): object|bool
+	{
+		$stmt = $this->pdo->prepare('SELECT * FROM employees WHERE id = ? AND admin = 0');
 		$stmt->execute([$id]);
 
 		return $stmt->fetch();
@@ -41,6 +53,26 @@ class EmployeeModel extends Model
 	{
 		$stmt = $this->pdo->prepare('DELETE FROM employees WHERE id = ?');
 		$stmt->execute([$id]);
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+
+	public function login(string $email, string $password): object|bool
+	{
+		$stmt = $this->pdo->prepare('SELECT * FROM employees WHERE email = ?');
+		$stmt->execute([$email]);
+		$employee = $stmt->fetch();
+
+		if (empty($employee)) {
+			return null;
+		}
+
+		if (!password_verify($password, $employee->password)) {
+			return null;
+		}
+
+		unset($employee->password);
+		return $employee;
 	}
 
 	////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,44 @@
+{% macro breadcrumbs(breadcrumbs) %}
+	<nav>
+		<ol class="breadcrumb">
+			{% for breadcrumb in breadcrumbs %}
+				<li class="breadcrumb-item {{ loop.last ? 'active' : '' }}">
+					<a href="{{ breadcrumb.link }}">
+						{{ breadcrumb.label }}
+					</a>
+				</li>
+			{% endfor %}
+		</ol>
+	</nav>
+{% endmacro %}
+
+{% macro pageHeader(text, actions = []) %}
+	<div class="d-flex justify-content-between align-items-center border-bottom mb-3">
+		<h1>{{ text }}</h1>
+		<div class="btn-group align-baseline">
+			{% for action in actions %}
+				<a href="{{ action.link }}" class="btn {{ action.class }}">{{ action.label }}</a>
+			{% endfor %}
+		</div>
+	</div>
+{% endmacro %}
+
+{% macro subPageHeader(text, actions = []) %}
+	<div class="d-flex justify-content-between align-items-center border-bottom mb-3">
+		<h3>{{ text }}</h3>
+		<div class="btn-group btn-group-sm align-baseline">
+			{% for action in actions %}
+				<a href="{{ action.link }}" class="btn {{ action.class }}">{{ action.label }}</a>
+			{% endfor %}
+		</div>
+	</div>
+{% endmacro %}
+
+{% macro definitions(definitions) %}
+	<dl class="row">
+		{% for definition in definitions %}
+			<dt class="col-2">{{ definition.label }}</dt>
+			<dd class="col-10">{{ definition.value }}</dd>
+		{% endfor %}
+	</dl>
+{% endmacro %}

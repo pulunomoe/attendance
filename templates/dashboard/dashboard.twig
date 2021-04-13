@@ -1,0 +1,71 @@
+{% extends '__layout.twig' %}
+
+{% import '__macros/html.twig' as html %}
+
+{% block content %}
+
+{% include '__commons/success.twig' %}
+
+{{ html.breadcrumbs([
+	{link: '#', label: 'Dashboard'}
+]) }}
+
+{{ html.pageHeader('Dashboard') }}
+
+{{ html.subPageHeader('My assignments') }}
+
+<table class="table table-hover">
+	<thead>
+	<tr>
+		<th>Department</th>
+		<th>Manager</th>
+		<th>Start date</th>
+		<th>End date</th>
+		<th>Active</th>
+		<th>Description</th>
+		<th></th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for assignment in myAssignments %}
+		<tr>
+			<td>{{ assignment.department_name }}</td>
+			<td>{{ assignment.manager_name }} &lt;{{ assignment.manager_email }}&gt;</a></td>
+			<td>{{ assignment.start_date|date('l, d F Y') }}</td>
+			<td>{{ assignment.end_date ? assignment.end_date|date('l, d F Y') : 'Undefined' }}</td>
+			<td>{{ assignment.active ? 'Yes' : 'No' }}</td>
+			<td>{{ assignment.description }}</td>
+			<td width="1%" style="white-space: nowrap">
+				<a href="/assignments/view/{{ assignment.id }}" class="btn {{ assignment.active ? 'btn-primary' : 'btn-info' }} btn-sm">Details</a>
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+<hr>
+
+{{ html.subPageHeader('My departments') }}
+
+<table class="table table-hover">
+	<thead>
+	<tr>
+		<th>Name</th>
+		<th>Description</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for department in myDepartments %}
+		<tr>
+			<td>
+				<a href="/departments/view/{{ department.id }}">
+					{{ department.name }}
+				</a>
+			</td>
+			<td>{{ department.description }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}

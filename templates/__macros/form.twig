@@ -1,0 +1,55 @@
+{% macro hidden(name, value) %}
+	{% if value %}
+		<input type="hidden" name="{{ name }}" value="{{ value }}">
+	{% endif %}
+{% endmacro %}
+
+{% macro csrf(key, value) %}
+	<input type="hidden" name="csrf_key" value="{{ key }}">
+	<input type="hidden" name="csrf_value" value="{{ value }}">
+{% endmacro %}
+
+{% macro input(name, label, value, type = 'text') %}
+	<div class="row mb-3">
+		<label for="f-{{ name }}" class="col-2 col-form-label">{{ label }}</label>
+		<div class="col-10">
+			<input type="{{ type }}" name="{{ name }}" id="f-{{ name }}" value="{{ value ?? '' }}" class="form-control form-control-sm"">
+		</div>
+	</div>
+{% endmacro %}
+
+{% macro select(name, label, options, value) %}
+	<div class="row mb-3">
+		<label for="f-{{ name }}" class="col-2 col-form-label">{{ label }}</label>
+		<div class="col-10">
+			<select name="{{ name }}" id="f-{{ name }}" class="form-select form-select-sm">
+				{% for v, l in options %}
+					<option value="{{ v }}" {{ v == value ? 'selected' : '' }}>{{ l }}</option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+{% endmacro %}
+
+{% macro textarea(name, label, value, rows = 3) %}
+	<div class="row mb-3">
+		<label for="f-{{ name }}" class="col-2 col-form-label">{{ label }}</label>
+		<div class="col-10">
+			<textarea name="{{ name }}" id="f-{{ name }}" rows="{{ rows }}" class="form-control form-control-sm">{{ value ?? '' }}</textarea>
+		</div>
+	</div>
+{% endmacro %}
+
+{% macro submit(label = 'Save') %}
+	<div class="row">
+		<div class="col-2">
+		</div>
+		<div class="col-10">
+			<button type="submit" class="btn btn-primary">{{ label }}</button>
+		</div>
+	</div>
+{% endmacro %}
+
+{% macro confirm(class='btn-danger', label = 'Yes I\'m sure!') %}
+	<button type="submit" class="btn {{ class }}">{{ label }}</button>
+{% endmacro %}

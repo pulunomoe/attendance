@@ -1,0 +1,25 @@
+{% extends 'departments/view.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% block subcontent %}
+
+{{ html.subpageHeader((status ? 'Edit' : 'Add new')~' status', [
+	{link: '/departments/view/'~department.id~'/statuses', class: 'btn-outline-secondary', label: 'Back to list'}
+]) }}
+
+<form method="post" action="/statuses/form">
+	{{ form.csrf(csrf.key, csrf.value) }}
+	{{ form.hidden('id', status.id) }}
+	{{ form.hidden('department_id', department.id) }}
+	{{ form.input('name', 'Name', status.name) }}
+	{{ form.input('description', 'Description', status.description) }}
+	{{ form.submit() }}
+</form>
+
+<script>
+	document.querySelector('a#statuses-tab').classList.add('active');
+</script>
+
+{% endblock %}

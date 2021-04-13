@@ -1,0 +1,32 @@
+{% extends '__layout.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% block content %}
+
+{% include '__commons/success.twig' %}
+{% include '__commons/errors.twig' %}
+
+{{ html.breadcrumbs([
+	{link: '/', label: 'Dashboard'},
+	{link: '#', label: 'My assignments'},
+	{link: '/assignments/view/'~assignment.id, label: assignment.department_name}
+]) }}
+
+{{ html.pageHeader('Assignment details', [
+	{link: '/', class: 'btn-outline-secondary', label: 'Back to dashboard'}
+]) }}
+
+{{ html.definitions([
+	{label: 'Department', value: assignment.department_name},
+	{label: 'Manager', value: assignment.manager_name~' <'~assignment.manager_email~'>'},
+	{label: 'Active', value: assignment.active ? 'Yes' : 'No'},
+	{label: 'Start date', value: assignment.start_date|date('l, d F Y')},
+	{label: 'End date', value: assignment.end_date ? assignment.end_date|date('l, d F Y') : 'Undefined'},
+	{label: 'Description', value: assignment.description}
+]) }}
+
+{% block subcontent %}{% endblock %}
+
+{% endblock %}

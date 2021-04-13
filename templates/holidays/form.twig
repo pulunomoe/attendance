@@ -1,0 +1,26 @@
+{% extends 'departments/view.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% block subcontent %}
+
+{{ html.subpageHeader((holiday ? 'Edit' : 'Add new')~' holiday', [
+	{link: '/departments/view/'~department.id~'/holidays', class: 'btn-outline-secondary', label: 'Back to list'}
+]) }}
+
+<form method="post" action="/holidays/form">
+	{{ form.csrf(csrf.key, csrf.value) }}
+	{{ form.hidden('id', holiday.id) }}
+	{{ form.hidden('department_id', department.id) }}
+	{{ form.input('name', 'Name', holiday.name) }}
+	{{ form.input('date', 'Date', holiday.date, 'date') }}
+	{{ form.textarea('description', 'Description', holiday.description) }}
+	{{ form.submit() }}
+</form>
+
+<script>
+	document.querySelector('a#holidays-tab').classList.add('active');
+</script>
+
+{% endblock %}

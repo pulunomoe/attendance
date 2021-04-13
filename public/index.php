@@ -2,10 +2,19 @@
 
 session_start();
 
+use Pulunomoe\Attendance\Controller\AssignmentController;
+use Pulunomoe\Attendance\Controller\AttendanceController;
+use Pulunomoe\Attendance\Controller\AuthenticationController;
+use Pulunomoe\Attendance\Controller\DashboardController;
 use Pulunomoe\Attendance\Controller\DepartmentController;
 use Pulunomoe\Attendance\Controller\EmployeeController;
+use Pulunomoe\Attendance\Controller\HolidayController;
+use Pulunomoe\Attendance\Controller\StatusController;
+use Pulunomoe\Attendance\Middleware\AuthenticationMiddleware;
 use Slim\Factory\AppFactory;
-use Slim\Views\PhpRenderer;
+use Slim\Views\Twig;
+use Slim\Views\TwigMiddleware;
+use Twig\Extension\DebugExtension;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -22,23 +31,75 @@ $pdo = new PDO(
 	]
 );
 
-$renderer = new PhpRenderer(__DIR__ . '/../templates/');
-$renderer->setLayout('layout.php');
+$twig = Twig::create(__DIR__ . '/../templates/', ['debug' => true]);
+$twig->addExtension(new DebugExtension());
+$twig->getEnvironment()->addGlobal('session', $_SESSION);
+$app->add(TwigMiddleware::create($app, $twig));
 
-$departmentController = new DepartmentController($pdo, $renderer);
+$authenticationController = new AuthenticationController($pdo);
+$dashboardController = new DashboardController($pdo);
+$departmentController = new DepartmentController($pdo);
+$employeeController = new EmployeeController($pdo);
+$statusController = new StatusController($pdo);
+$holidayController = new HolidayController($pdo);
+$assignmentController = new AssignmentController($pdo);
+$attendanceController = new AttendanceController($pdo);
 
-$app->get('/departments', [$departmentController, 'index']);
-$app->get('/departments/view/{id}', [$departmentController, 'view']);
-$app->get('/departments/form[/{id}]', [$departmentController, 'form']);
-$app->post('/departments/form', [$departmentController, 'formPost']);
-$app->post('/departments/delete', [$departmentController, 'deletePost']);
+$everyone = new AuthenticationMiddleware(AuthenticationMiddleware::RULE_EVERYONE);
+$admin = new AuthenticationMiddleware(AuthenticationMiddleware::RULE_ADMIN);
 
-$employeeController = new EmployeeController($pdo, $renderer);
+$app->get('/login', [$authenticationController, 'login']);
+$app->post('/login', [$authenticationController, 'loginPost']);
+$app->get('/logout', [$authenticationController, 'logout']);
 
-$app->get('/employees', [$employeeController, 'index']);
-$app->get('/employees/view/{id}', [$employeeController, 'view']);
-$app->get('/employees/form[/{id}]', [$employeeController, 'form']);
-$app->post('/employees/form', [$employeeController, 'formPost']);
-$app->post('/employees/delete', [$employeeController, 'deletePost']);
+$app->get('/', [$dashboardController, 'dashboard'])->add($everyone);
+
+$app->get('/departments', [$departmentController, 'index'])->add($admin);
+$app->get('/departments/view/{id}', [$departmentController, 'view'])->add($everyone);
+$app->get('/departments/form[/{id}]', [$departmentController, 'form'])->add($admin);
+$app->post('/departments/form', [$departmentController, 'formPost'])->add($admin);
+$app->get('/departments/delete/{id}', [$departmentController, 'delete'])->add($admin);
+$app->post('/departments/delete', [$departmentController, 'deletePost'])->add($admin);
+
+$app->get('/employees', [$employeeController, 'index'])->add($admin);
+$app->get('/employees/view/{id}', [$employeeController, 'view'])->add($admin);
+$app->get('/employees/form[/{id}]', [$employeeController, 'form'])->add($admin);
+$app->post('/employees/form', [$employeeController, 'formPost'])->add($admin);
+$app->get('/employees/delete/{id}', [$employeeController, 'delete'])->add($admin);
+$app->post('/employees/delete', [$employeeController, 'deletePost'])->add($admin);
+
+$app->get('/departments/view/{departmentId}/statuses', [$statusController, 'index'])->add($everyone);
+$app->get('/departments/view/{departmentId}/statuses/form[/{id}]', [$statusController, 'form'])->add($everyone);
+$app->post('/statuses/form', [$statusController, 'formPost'])->add($everyone);
+$app->get('/departments/view/{departmentId}/statuses/delete/{id}', [$statusController, 'delete'])->add($everyone);
+$app->post('/statuses/delete', [$statusController, 'deletePost'])->add($everyone);
+
+$app->get('/departments/view/{departmentId}/holidays', [$holidayController, 'index'])->add($everyone);
+$app->get('/departments/view/{departmentId}/holidays/form[/{id}]', [$holidayController, 'form'])->add($everyone);
+$app->post('/holidays/form', [$holidayController, 'formPost'])->add($everyone);
+$app->get('/departments/view/{departmentId}/holidays/delete/{id}', [$holidayController, 'delete'])->add($everyone);
+$app->post('/holidays/delete', [$holidayController, 'deletePost'])->add($everyone);
+
+$app->get('/departments/view/{departmentId}/assignments', [$assignmentController, 'indexFromDepartment'])->add($everyone);
+$app->get('/employees/view/{employeeId}/assignments', [$assignmentController, 'indexFromEmployee'])->add($admin);
+$app->get('/departments/view/{departmentId}/assignments/view/{id}', [$assignmentController, 'view'])->add($everyone);
+$app->get('/departments/view/{departmentId}/assignments/form[/{id}]', [$assignmentController, 'formFromDepartment'])->add($admin);
+$app->get('/employees/view/{employeeId}/assignments/form[/{id}]', [$assignmentController, 'formFromEmployee'])->add($admin);
+$app->post('/assignments/form', [$assignmentController, 'formPost'])->add($admin);
+$app->get('/departments/view/{departmentId}/assignments/delete/{id}', [$assignmentController, 'deleteFromDepartment'])->add($admin);
+$app->get('/employees/view/{employeeId}/assignments/delete/{id}', [$assignmentController, 'deleteFromEmployee'])->add($admin);
+$app->post('/assignments/delete', [$assignmentController, 'deletePost'])->add($admin);
+
+$app->get('/departments/view/{departmentId}/assignments/report', [$assignmentController, 'report'])->add($everyone);
+$app->post('/assignments/report', [$assignmentController, 'reportPost'])->add($everyone);
+
+$app->get('/assignments/view/{id}', [$assignmentController, 'viewMine'])->add($everyone);
+$app->get('/assignments/view/{id}/check_in', [$assignmentController, 'checkIn'])->add($everyone);
+$app->post('/assignments/check_in', [$assignmentController, 'checkInPost'])->add($everyone);
+
+$app->get('/departments/view/{departmentId}/assignments/view/{assignmentId}/attendances/form[/{id}]', [$attendanceController, 'form'])->add($everyone);
+$app->post('/attendances/form', [$attendanceController, 'formPost'])->add($everyone);
+$app->get('/departments/view/{departmentId}/assignments/view/{assignmentId}/attendances/delete/{id}', [$attendanceController, 'delete'])->add($everyone);
+$app->post('/attendances/delete', [$attendanceController, 'deletePost'])->add($everyone);
 
 $app->run();

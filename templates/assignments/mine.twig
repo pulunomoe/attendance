@@ -1,0 +1,34 @@
+{% extends 'assignments/common.twig' %}
+
+{% import '__macros/html.twig' as html %}
+
+{% block subcontent %}
+
+{% if checkIn %}
+	{% set subPageHeaderLinks = [
+		{link: '/assignments/view/'~assignment.id~'/check_in', class: 'btn-primary', label: 'Check-in'}
+	] %}
+{% endif %}
+
+{{ html.subPageHeader('Attendance list', subPageHeaderLinks) }}
+
+<table class="table table-hover">
+	<thead>
+	<tr>
+		<th>Date</th>
+		<th>Status</th>
+		<th>Description</th>
+	</tr>
+	</thead>
+	<tbody>
+		{% for attendance in attendances %}
+			<tr>
+				<td>{{ attendance.date|date('d F Y') }}</td>
+				<td>{{ attendance.status }}</a></td>
+				<td>{{ attendance.description }}</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}

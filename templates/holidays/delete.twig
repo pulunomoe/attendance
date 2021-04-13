@@ -1,0 +1,30 @@
+{% extends 'departments/view.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% block subcontent %}
+
+{{ html.subpageHeader('Delete holiday', [
+	{link: '/departments/view/'~department.id~'/holidays', class: 'btn-outline-secondary', label: 'Back to list'}
+]) }}
+
+{{ html.definitions([
+	{label: 'Name', value: holiday.name},
+	{label: 'Description', value: holiday.description}
+]) }}
+
+<p class="fw-bold border-bottom mt-3">Are you sure you want to delete this holiday? All data associated with this holiday will also be deleted!</p>
+
+<form method="post" action="/holidays/delete">
+	{{ form.csrf(csrf.key, csrf.value) }}
+	{{ form.hidden('id', holiday.id) }}
+	{{ form.hidden('department_id', department.id) }}
+	{{ form.confirm() }}
+</form>
+
+<script>
+	document.querySelector('a#holidays-tab').classList.add('active');
+</script>
+
+{% endblock %}
