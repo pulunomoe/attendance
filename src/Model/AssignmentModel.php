@@ -42,9 +42,7 @@ class AssignmentModel extends Model
 		$assignments = $this->findAllByEmployee($_SESSION['employee']->id);
 
 		foreach ($assignments as &$assignment) {
-			$department = $this->departmentModel->findOne($assignment->department_id);
-			$assignment->manager_name = $department->manager_name;
-			$assignment->manager_email = $department->manager_email;
+			$assignment = $this->enrichFields($assignment);
 		}
 
 		return $assignments;
@@ -55,7 +53,9 @@ class AssignmentModel extends Model
 		$stmt = $this->pdo->prepare('SELECT * FROM assignments_view WHERE id = ?');
 		$stmt->execute([$id]);
 
-		return $stmt->fetch();
+		$assignment = $stmt->fetch();
+
+		return $this->enrichFields($assignment);
 	}
 
 	public function create(int $departmentId, int $employeeId, string $startDate, string $endDate, string $description): ?int
@@ -244,5 +244,19 @@ class AssignmentModel extends Model
 		}
 
 		return $errors;
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+
+	private function enrichFields(object $assignment): object
+	{
+		$department = $this->departmentModel->findOne($assignment->department_id);
+		$assignment->manager_name = $department->manager_name;
+		$assignment->manager_email = $department->manager_email;
+
+		$today = new DateTime();
+		$assignment->active = ((new DateTime($assignment->start_date)) <= $today && (new DateTime($assignment->end_date)) >= $today);
+
+		return $assignment;
 	}
 }

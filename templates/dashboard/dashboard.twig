@@ -21,6 +21,7 @@
 		<th>Manager</th>
 		<th>Start date</th>
 		<th>End date</th>
+		<th>Active</th>
 		<th>Description</th>
 		<th></th>
 	</tr>
@@ -32,9 +33,10 @@
 			<td>{{ assignment.manager_name }} &lt;{{ assignment.manager_email }}&gt;</a></td>
 			<td>{{ assignment.start_date|date('l, d F Y') }}</td>
 			<td>{{ assignment.end_date ? assignment.end_date|date('l, d F Y') : 'Undefined' }}</td>
+			<td>{{ assignment.active ? 'Yes' : 'No' }}</td>
 			<td>{{ assignment.description }}</td>
 			<td width="1%" style="white-space: nowrap">
-				<a href="/assignments/view/{{ assignment.id }}" class="btn btn-primary btn-sm">Details</a>
+				<a href="/assignments/view/{{ assignment.id }}" class="btn {{ assignment.active ? 'btn-primary' : 'btn-info' }} btn-sm">Details</a>
 			</td>
 		</tr>
 	{% endfor %}

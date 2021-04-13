@@ -2,6 +2,8 @@
 
 namespace Pulunomoe\Attendance\Controller;
 
+use Cassandra\Date;
+use DateTime;
 use PDO;
 use Psr\Http\Message\ResponseInterface;
 use Pulunomoe\Attendance\Middleware\AuthenticationMiddleware;
@@ -9,6 +11,7 @@ use Pulunomoe\Attendance\Model\AttendanceModel;
 use Pulunomoe\Attendance\Model\DepartmentModel;
 use Pulunomoe\Attendance\Model\AssignmentModel;
 use Pulunomoe\Attendance\Model\EmployeeModel;
+use Pulunomoe\Attendance\Model\StatusModel;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
@@ -19,6 +22,7 @@ class AssignmentController extends Controller
 	private EmployeeModel $employeeModel;
 	private AssignmentModel $assignmentModel;
 	private AttendanceModel $attendanceModel;
+	private StatusModel $statusModel;
 
 	public function __construct(PDO $pdo)
 	{
@@ -27,6 +31,7 @@ class AssignmentController extends Controller
 		$this->employeeModel = new EmployeeModel($pdo);
 		$this->assignmentModel = new AssignmentModel($pdo);
 		$this->attendanceModel = new AttendanceModel($pdo);
+		$this->statusModel = new StatusModel($pdo);
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -301,4 +306,82 @@ class AssignmentController extends Controller
 		return $response->withFileDownload(fopen('data://text/plain,'.$report,'r'), 'report.csv', 'text/csv');
 	}
 
+	////////////////////////////////////////////////////////////////////////////
+
+	public function viewMine(ServerRequest $request, Response $response, array $args): ResponseInterface
+	{
+		$id = $args['id'];
+
+		$assignment = $this->assignmentModel->findOne($id);
+		if (empty($assignment)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		AuthenticationMiddleware::employeeOnly($request, $assignment);
+
+		$assignment = $this->assignmentModel->findOne($id);
+		if (empty($assignment)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		$checkIn = false;
+		$today = new DateTime();
+		if ($assignment->active && (new DateTime($assignment->start_date) <= $today) && (new DateTime($assignment->end_date) >= $today)) {
+			$checkIn = true;
+		}
+		if (!empty($this->attendanceModel->findOneByAssignmentAndDate($id, (new DateTime())->format('Y-m-d')))) {
+			$checkIn = false;
+		}
+
+		return $this->render($request, $response, 'assignments/mine.twig', [
+			'assignment' => $assignment,
+			'attendances' => $this->attendanceModel->findAllByAssignment($args['id']),
+			'checkIn' => $checkIn,
+			'success' => $this->getFlash('success')
+		]);
+	}
+
+	public function checkIn(ServerRequest $request, Response $response, array $args): ResponseInterface
+	{
+		$id = $args['id'];
+
+		$assignment = $this->assignmentModel->findOne($id);
+		if (empty($assignment)) {
+			throw new HttpNotFoundException($request);
+		}
+
+		AuthenticationMiddleware::employeeOnly($request, $assignment);
+
+		return $this->render($request, $response, 'assignments/checkin.twig', [
+			'csrf' => $this->generateCsrfToken(),
+			'date' => (new DateTime())->format('l, d F Y'),
+			'assignment' => $assignment,
+			'statuses' => $this->statusModel->findAllByDepartmentForSelect($assignment->department_id),
+			'errors' => $this->getFlash('errors')
+		]);
+	}
+
+	public function checkInPost(ServerRequest $request, Response $response): ResponseInterface
+{
+	$this->verifyCsrfToken($request);
+
+	$assignmentId = $request->getParam('assignment_id');
+	$statusId = $request->getParam('status_id');
+	$date = (new DateTime())->format('Y-m-d');
+	$description = $request->getParam('description');
+
+	$baseUrl = '/assignments/view/'.$assignmentId;
+
+	$errors = $this->attendanceModel->validateCreate($assignmentId, $statusId, $date);
+	if (!empty($errors)) {
+		$this->setFlash('errors', $errors);
+		$url = $baseUrl.'/check_in';
+		return $response->withRedirect($url);
+	}
+
+	$this->attendanceModel->create($assignmentId, $statusId, $date, $description);
+
+	$this->setFlash('success', 'Check-in has been successfully saved');
+	return $response->withRedirect($baseUrl);
+}
 }

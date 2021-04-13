@@ -1,0 +1,24 @@
+{% extends 'assignments/common.twig' %}
+
+{% import '__macros/html.twig' as html %}
+{% import '__macros/form.twig' as form %}
+
+{% block subcontent %}
+
+{{ html.subPageHeader('Check-in', [
+    {link: '/assignments/view/'~assignment.id, class: 'btn-outline-secondary', label: 'Back to list'}
+]) }}
+
+{{ html.definitions([
+    {label: 'Date', value: date}
+]) }}
+
+<form method="post" action="/assignments/check_in">
+    {{ form.csrf(csrf.key, csrf.value) }}
+    {{ form.hidden('assignment_id', assignment.id) }}
+    {{ form.select('status_id', 'Status', statuses, attendance.status_id) }}
+    {{ form.textarea('description', 'Description', attendance.description) }}
+    {{ form.submit() }}
+</form>
+
+{% endblock %}

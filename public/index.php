@@ -93,6 +93,10 @@ $app->post('/assignments/delete', [$assignmentController, 'deletePost'])->add($a
 $app->get('/departments/view/{departmentId}/assignments/report', [$assignmentController, 'report'])->add($everyone);
 $app->post('/assignments/report', [$assignmentController, 'reportPost'])->add($everyone);
 
+$app->get('/assignments/view/{id}', [$assignmentController, 'viewMine'])->add($everyone);
+$app->get('/assignments/view/{id}/check_in', [$assignmentController, 'checkIn'])->add($everyone);
+$app->post('/assignments/check_in', [$assignmentController, 'checkInPost'])->add($everyone);
+
 $app->get('/departments/view/{departmentId}/assignments/view/{assignmentId}/attendances/form[/{id}]', [$attendanceController, 'form'])->add($everyone);
 $app->post('/attendances/form', [$attendanceController, 'formPost'])->add($everyone);
 $app->get('/departments/view/{departmentId}/assignments/view/{assignmentId}/attendances/delete/{id}', [$attendanceController, 'delete'])->add($everyone);

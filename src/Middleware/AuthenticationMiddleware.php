@@ -6,6 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Exception\HttpForbiddenException;
+use Slim\Exception\HttpSpecializedException;
 use Slim\Psr7\Response;
 
 class AuthenticationMiddleware
@@ -41,6 +42,14 @@ class AuthenticationMiddleware
 	public static function managerOnly(Request $request, object $department): void
 	{
 		if (!$_SESSION['employee']->admin && $department->manager_id != $_SESSION['employee']->id) {
+			session_destroy();
+			throw new HttpForbiddenException($request);
+		}
+	}
+
+	public static function employeeOnly(Request $request, object $assignment): void
+	{
+		if (!$_SESSION['employee']->admin && $assignment->employee_id != $_SESSION['employee']->id) {
 			session_destroy();
 			throw new HttpForbiddenException($request);
 		}
